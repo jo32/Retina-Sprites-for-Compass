@@ -81,7 +81,7 @@
   $class-list: ();
   @each $sprite-name in $sprite-names {
     $full-sprite-name: unquote('.#{$prefix}#{$separator}#{$sprite-name}');
-    $class-list: append($class-list, $full-sprite-name);
+    $class-list: append($class-list, $full-sprite-name, comma);
   }
 
   #{$class-list} {
