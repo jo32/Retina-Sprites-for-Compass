@@ -9,6 +9,15 @@ I'm no longer actively using sprites in my projects so i'm not going to be maint
 
 <br><br><br><hr><br><br><br>
 
+## Notice - What this fork do
+
+This fork add feature generating classes like what compass provided feature  `@include all-***-sprite` do. By using mixin `retina-classnames`:
+
+    @include retina-classnames();
+
+You will get classes corresponding to each sprite element, which support retina displays.
+
+<br><br><br><hr><br><br><br>
 
 While building Tagit's website, I came across the need to use compass sprites with hover states on normal and retina devices. Not being able to find anything that would suite my needs, I forked a gist from [this Gist](https://gist.github.com/2140082) and added hover & active parameters. Big thanks to [thulstrup](https://github.com/thulstrup) and  [rstacruz](https://github.com/rstacruz)!
 

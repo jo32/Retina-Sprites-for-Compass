@@ -2,25 +2,27 @@
 @import "compass/css3/background-size";      // Include helper to calc background size
 
 
-@mixin retina-sprite($name, $hover: false, $active: false) {
-  @include _retina-sprite($name, $sprites, $sprites2x, $hover, $active);
+@mixin retina-sprite($name, $hover: false, $active: false, $is-single-use: true) {
+  @include _retina-sprite($name, $sprites, $sprites2x, $hover, $active, $is-single-use: $is-single-use);
 }
 
 // The general purpose retina sprite mixin.
   //
   //    @include retina-sprite(name, $spritemap1, $spritemap2)
-  //    @include retina-sprite(name, $spritemap1, $spritemap2[, $dimensions: true, $pad: 0])
+  //    @include retina-sprite(name, $spritemap1, $spritemap2[, $dimensions: true, $pad: 1])
   //
   //    If `dimensions` is true, then width/height will also be set.
   //
   //    if `pad` is non-zero, then that's how much padding the element will have (requires
   //    $spacing on the sprite maps). Great for iPhone interfaces to make hit areas bigger.
   //
-@mixin _retina-sprite($name, $sprites, $sprites2x, $hover, $active, $dimensions: true, $pad: 0) {  
+@mixin _retina-sprite($name, $sprites, $sprites2x, $hover, $active, $dimensions: true, $pad: 5, $is-single-use: true) {
   @if $dimensions == true {
     @include sprite-dimensions($sprites, $name);
   }
-  background-image: sprite-url($sprites);
+  @if $is-single-use == true {
+    background-image: sprite-url($sprites);
+  }
   background-position: sprite-position($sprites, $name, -$pad, -$pad);
   background-repeat: no-repeat;
 
@@ -44,12 +46,16 @@
   @media (-webkit-min-device-pixel-ratio: 1.5), (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
     & {
       $pos: sprite-position($sprites2x, $name, -$pad * 2, -$pad * 2);
-      background-image: sprite-url($sprites2x);
+      @if $is-single-use == true {
+        background-image: sprite-url($sprites2x);
+      }
       background-position: nth($pos, 1) / 2 nth($pos, 2) / 2;
-      @include background-size(ceil(image-width(sprite-path($sprites2x)) / 2) auto);
-      //  sprite-path() returns the path of the generated sprite sheet, which
-      //  image-width() calculates the width of. the ceil() is in place in case
-      //  you have sprites that have an odd-number of pixels in width
+      @if $is-single-use == true {
+        @include background-size(ceil(image-width(sprite-path($sprites2x)) / 2) auto);
+        //  sprite-path() returns the path of the generated sprite sheet, which
+        //  image-width() calculates the width of. the ceil() is in place in case
+        //  you have sprites that have an odd-number of pixels in width
+      }
       
       @if $hover == true {
         $name_hover: $name + _hover;    // create myButton_hover and assign it
@@ -63,6 +69,41 @@
         &:active{
           $pos: sprite-position($sprites2x, $name_active, -$pad * 2, -$pad * 2);
           background-position: nth($pos, 1) / 2 nth($pos, 2) / 2;
+        }
+      }
+    }
+  }
+}
+
+@mixin retina-classnames($prefix: sprite-map-name($sprites), $separator: $default-sprite-separator) {
+  $sprite-names: sprite-names($sprites);
+
+  $class-list: ();
+  @each $sprite-name in $sprite-names {
+    $full-sprite-name: unquote('.#{$prefix}#{$separator}#{$sprite-name}');
+    $class-list: append($class-list, $full-sprite-name);
+  }
+
+  #{$class-list} {
+    background-image: sprite-url($sprites);
+  }
+
+  @media (-webkit-min-device-pixel-ratio: 1.5), (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+    #{$class-list} {
+      background-image: sprite-url($sprites2x);
+      @include background-size(ceil(image-width(sprite-path($sprites2x)) / 2) auto);
+      //  sprite-path() returns the path of the generated sprite sheet, which
+      //  image-width() calculates the width of. the ceil() is in place in case
+      //  you have sprites that have an odd-number of pixels in width
+    }
+  }
+
+  @each $sprite-name in $sprite-names {
+    @if sprite_does_not_have_parent($sprites, $sprite-name) {
+      $full-sprite-name: #{$prefix}#{$separator}#{$sprite-name};
+      @if sprite_has_valid_selector($full-sprite-name) {
+        .#{$full-sprite-name} {
+          @include retina-sprite($sprite-name, $is-single-use: false);
         }
       }
     }
